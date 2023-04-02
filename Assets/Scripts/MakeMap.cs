@@ -6,11 +6,12 @@ using System.IO;
 
 public class MakeMap : MonoBehaviour
 {
-    public GameObject temp;
+    public string filename;
+
     // Start is called before the first frame update
     void Start()
     {
-        //PythonScriptRun();
+        PythonScriptRun(filename);
         int count = 1;
         StreamReader sr = new StreamReader("model position.txt");
         while (sr.Peek() >= 0)
@@ -32,8 +33,8 @@ public class MakeMap : MonoBehaviour
         
     }
 
-    public void PythonScriptRun()
+    public void PythonScriptRun(string _filename)
     {
-        PythonRunner.RunFile("Assets/new_python_script.py");
+        PythonRunner.RunFile("Assets/"+ _filename);
     }
 }
