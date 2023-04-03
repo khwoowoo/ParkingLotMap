@@ -7,11 +7,12 @@ using System.IO;
 public class MakeMap : MonoBehaviour
 {
     public string filename;
-
+    public bool isPythonRun;
     // Start is called before the first frame update
     void Start()
     {
-        PythonScriptRun(filename);
+        if(isPythonRun)
+            PythonScriptRun(filename);
         int count = 1;
         StreamReader sr = new StreamReader("model position.txt");
         while (sr.Peek() >= 0)
