@@ -5,7 +5,7 @@
         "m_Name": "",
         "m_EditorClassIdentifier": "Unity.Scripting.Python.Editor:UnityEditor.Scripting.Python:PythonSettings",
         "m_sitePackages": [
-            "C:\\Users\\add\\anaconda3\\envs\\mesh\\Lib\\site-packages"
+            "C:\\Users\\kanghyunwoo\\anaconda3\\envs\\mesh\\Lib\\site-packages"
         ]
     }
 }
