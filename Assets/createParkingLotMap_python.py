@@ -5,6 +5,8 @@ import open3d as o3d
 import threading
 import glob
 
+viewList = []
+
 # 파일에 내용을 쓰는 함수
 def write_to_file(file_path, text):
     with open(file_path, "a") as f:
@@ -12,6 +14,11 @@ def write_to_file(file_path, text):
 
 # 포인트 클라우드 하나 프로세스
 def process_point_cloud(input_path, output_path, lock):
+    #pcd = o3d.io.read_point_cloud(input_path)
+    #voxel_down_pcd = pcd.voxel_down_sample(voxel_size=0.1)
+    #mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(voxel_down_pcd, alpha=1)
+    #o3d.io.write_triangle_mesh(output_path, mesh)
+
     pcd = o3d.io.read_point_cloud(input_path)
 
     pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
@@ -19,8 +26,9 @@ def process_point_cloud(input_path, output_path, lock):
     alpha = 1.9
     alpha_mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
     alpha_mesh.compute_vertex_normals()
-
+    alpha_mesh = alpha_mesh.simplify_quadric_decimation(target_number_of_triangles=1000)
     o3d.io.write_triangle_mesh(output_path, alpha_mesh)
+    viewList.append(alpha_mesh)
 
     pcd_filename=os.path.basename(input_path).split(".")[0]
     means = np.mean(np.asarray(pcd.points), axis=0)
@@ -47,12 +55,12 @@ def process_files_in_batch(batch):
 
 
 # 입력 폴더 경로 설정
-pcd_folder_path = "./pillars" # 여기 pcd 파일들이 모여있는 폴더 경로로 설정!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+pcd_folder_path = "./PCDs" # 여기 pcd 파일들이 모여있는 폴더 경로로 설정!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # 출력 폴더 경로 설정
-obj_folder_path = "./Resources/pillars" # 여기 obj 파일들이 출력할 폴더 경로로 설정!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+obj_folder_path = "./Resources/models" # 여기 obj 파일들이 출력할 폴더 경로로 설정!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # 위치 저장할 txt 파일 생성
-txt_file_path = "./Resources/pillars/location.txt"
+txt_file_path = "./Resources/models/location.txt"
 
 # 폴더 내부의 모든 .pcd 파일을 불러옵니다.
 pcd_files = glob.glob(os.path.join(pcd_folder_path, "*.pcd"))
@@ -72,8 +80,10 @@ for filename in pcd_filenames:
 
 
 # 병렬 처리를 위한 쓰레드 생성
-N = 4  # 한 번에 처리할 파일 개수
+N = 4 # 한 번에 처리할 파일 개수
 batches = [pcd_filenames[i:i + N] for i in range(0, len(pcd_filenames), N)]
 
 for batch in batches:
     process_files_in_batch(batch)
+
+o3d.visualization.draw_geometries(viewList, mesh_show_back_face=True)
