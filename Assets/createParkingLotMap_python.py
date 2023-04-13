@@ -4,6 +4,8 @@ import numpy as np
 import open3d as o3d
 import threading
 import glob
+import math
+import time
 
 viewList = []
 
@@ -14,28 +16,50 @@ def write_to_file(file_path, text):
 
 # 포인트 클라우드 하나 프로세스
 def process_point_cloud(input_path, output_path, lock):
+
     #pcd = o3d.io.read_point_cloud(input_path)
-    #voxel_down_pcd = pcd.voxel_down_sample(voxel_size=0.1)
-    #mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(voxel_down_pcd, alpha=1)
-    #o3d.io.write_triangle_mesh(output_path, mesh)
-
+    # 포인트 클라우드 정규 추정
+    #pcd.estimate_normals()
+    # 메쉬 생성을 위한 Poisson Surface Reconstruction
+    #mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=8)
+    # 메쉬 저장 (옵션)
+    o3d.io.write_triangle_mesh(output_path , mesh)
     pcd = o3d.io.read_point_cloud(input_path)
+    voxel_down_pcd = pcd.voxel_down_sample(voxel_size=0.1)
+    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(voxel_down_pcd, alpha=1)
+    o3d.io.write_triangle_mesh(output_path, mesh)
 
-    pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+    #pcd = o3d.io.read_point_cloud(input_path)
 
-    alpha = 1.9
-    alpha_mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
-    alpha_mesh.compute_vertex_normals()
-    alpha_mesh = alpha_mesh.simplify_quadric_decimation(target_number_of_triangles=1000)
-    o3d.io.write_triangle_mesh(output_path, alpha_mesh)
-    viewList.append(alpha_mesh)
+    #pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+
+    #alpha = 1.9
+    #alpha_mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
+    #alpha_mesh.compute_vertex_normals()
+    #alpha_mesh = alpha_mesh.simplify_quadric_decimation(target_number_of_triangles=1000)
+    #o3d.io.write_triangle_mesh(output_path, alpha_mesh)
+    viewList.append(mesh)
 
     pcd_filename=os.path.basename(input_path).split(".")[0]
     means = np.mean(np.asarray(pcd.points), axis=0)
     
     # txt 파일은 하나에 여러 쓰레드가 써야해서 락 필요
-    with lock:
-        write_to_file(txt_file_path, pcd_filename+" "+" ".join(map(str, means))+"\n")
+    #with lock:
+    #    write_to_file(txt_file_path, pcd_filename+" "+" ".join(map(str, means))+"\n")
+
+# 포인트 클라우드 하나 프로세스
+def temp(input_path, output_path):
+    pcd = o3d.io.read_point_cloud(input_path)
+    #포인트 클라우드 정규 추정
+    pcd.estimate_normals()
+    #메쉬 생성을 위한 Poisson Surface Reconstruction
+    mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=8)
+    #메쉬 저장 (옵션)
+    viewList.append(mesh)
+
+    pcd_filename=os.path.basename(input_path).split(".")[0]
+    means = np.mean(np.asarray(pcd.points), axis=0)
+
 
 # 배치 만들어서 파일 프로세스
 def process_files_in_batch(batch):
@@ -74,16 +98,19 @@ for filename in pcd_filenames:
 
 # pcd_filenames = ['pillar0_0', 'pillar0_1','pillar0_2','pillar0_3','pillar0_4','pillar0_5','pillar0_6', 'pillar1_0', 'pillar1_1','pillar1_2','pillar1_3','pillar1_4','pillar1_5','pillar1_6', 'pillar2_0', 'pillar2_1','pillar2_2','pillar2_3','pillar2_4','pillar2_5','pillar2_6','pillar3_0']
 
-# 순차적으로 처리
-#for i in range(len(pcd_filenames)):
-#    process_point_cloud('pillars/'+pcd_filenames[i]+'.pcd', 'Resources/pillars/'+ pcd_filenames[i]+'.obj')
+start = time.time()
+# 순차적으로 처리 146.34747 sec 17.18593 sec
+for i in range(len(pcd_filenames)):
+    temp(pcd_folder_path + '/'+ pcd_filenames[i]+'.pcd', obj_folder_path+'/'+  pcd_filenames[i]+'.obj')
+end = time.time()
 
-
-# 병렬 처리를 위한 쓰레드 생성
-N = 4 # 한 번에 처리할 파일 개수
-batches = [pcd_filenames[i:i + N] for i in range(0, len(pcd_filenames), N)]
-
-for batch in batches:
-    process_files_in_batch(batch)
-
+# 병렬 처리를 위한 쓰레드 생성 149.12386 sec 15.91600 sec
+#N = 3 # 한 번에 처리할 파일 개수
+#batches = [pcd_filenames[i:i + N] for i in range(0, len(pcd_filenames), N)]
+#
+#start = time.time()
+#for batch in batches:
+#    process_files_in_batch(batch)
+#end = time.time()
+print(f"{end - start:.5f} sec")
 o3d.visualization.draw_geometries(viewList, mesh_show_back_face=True)
