@@ -47,10 +47,10 @@ public class ObjectDetection : MonoBehaviour
             {
                 string position = sr.ReadLine();
                 string[] posSlit = position.Split(' ');
-                GameObject obj = Instantiate(objPrefab, new Vector3(float.Parse(posSlit[0]), float.Parse(posSlit[1]), float.Parse(posSlit[2])) * range, Quaternion.identity);
+                GameObject obj = Instantiate(objPrefab, new Vector3(float.Parse(posSlit[0]), float.Parse(posSlit[1]), float.Parse(posSlit[2])) * range, Quaternion.Euler(0f, 90f,0));
                 obj.transform.parent = gameObject.transform;
             }
-            transform.eulerAngles = new Vector3(-90f, 0f, 0f);
+            transform.eulerAngles = new Vector3(0f, 0f, 0f);
             sr.Close();
         }
         catch (FileNotFoundException e)

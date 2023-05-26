@@ -17,7 +17,10 @@ public class GameUI : MonoBehaviour
     {
 
     }
-
+    public void CliickExitButton()
+    {
+        exitUI.SetActive(true);
+    }
     public void NoButtonClick()
     {
         exitUI.SetActive(false);

@@ -1,40 +1,39 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ViewerController : MonoBehaviour
 {
-    public float speed = 5.0f;
-    public float sensitivity = 2.0f;
-
-    private float xRotation = 0.0f;
-    private float yRotation = 0.0f;
-
-    public GameObject exitUI;
-
-    void Start()
-    {
-    }
+    private Vector2 touchStart;
+    private Vector2 touchPrevious;
+    public float moveSpeed = 0.1f;
+    public float rotationSpeed = 0.5f;
 
     void Update()
     {
-        // WASD 이동
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        Vector3 moveDirection = transform.right * horizontal + transform.forward * vertical;
-        transform.position += moveDirection.normalized * speed * Time.deltaTime;
-
-        // 마우스 회전
-        float mouseX = Input.GetAxis("Mouse X") * sensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
-        xRotation -= mouseY;
-        yRotation += mouseX;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
-        transform.localRotation = Quaternion.Euler(xRotation, yRotation, 0f);
-
-        if (Input.GetKeyDown(KeyCode.Escape))
+        // 터치 입력 처리
+        if (Input.touchCount == 1)
         {
-            exitUI.SetActive(true);
+            Touch touch = Input.GetTouch(0);
+
+            // 터치 시작 시점
+            if (touch.phase == TouchPhase.Began)
+            {
+                touchStart = touch.position;
+                touchPrevious = touch.position;
+            }
+            // 터치 이동 중
+            else if (touch.phase == TouchPhase.Moved)
+            {
+                // 이동 벡터 계산
+                Vector2 touchDelta = touch.position - touchStart;
+                Vector3 moveVector = new Vector3(-touchDelta.x, 0f, -touchDelta.y) * moveSpeed;
+                transform.position += moveVector;
+
+                // 회전
+                float rotationDelta = touchDelta.x * rotationSpeed;
+                transform.Rotate(Vector3.up, rotationDelta, Space.World);
+
+                touchPrevious = touch.position;
+            }
         }
     }
 }
