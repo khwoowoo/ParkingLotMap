@@ -5,7 +5,8 @@ using UnityEngine.UI;
 
 public class JoystickSetterExample : MonoBehaviour
 {
-    public VariableJoystick variableJoystick;
+    public VariableJoystick leftJoystick;
+    public VariableJoystick rightJoystick;
     public Text valueText;
     public Image background;
     public Sprite[] axisSprites;
@@ -15,13 +16,16 @@ public class JoystickSetterExample : MonoBehaviour
         switch(index)
         {
             case 0:
-                variableJoystick.SetMode(JoystickType.Fixed);
+                leftJoystick.SetMode(JoystickType.Fixed);
+                rightJoystick.SetMode(JoystickType.Fixed);
                 break;
             case 1:
-                variableJoystick.SetMode(JoystickType.Floating);
+                leftJoystick.SetMode(JoystickType.Floating);
+                rightJoystick.SetMode(JoystickType.Floating);
                 break;
             case 2:
-                variableJoystick.SetMode(JoystickType.Dynamic);
+                leftJoystick.SetMode(JoystickType.Dynamic);
+                rightJoystick.SetMode(JoystickType.Dynamic);
                 break;
             default:
                 break;
@@ -33,15 +37,18 @@ public class JoystickSetterExample : MonoBehaviour
         switch (index)
         {
             case 0:
-                variableJoystick.AxisOptions = AxisOptions.Both;
+                leftJoystick.AxisOptions = AxisOptions.Both;
+                rightJoystick.AxisOptions = AxisOptions.Both;
                 background.sprite = axisSprites[index];
                 break;
             case 1:
-                variableJoystick.AxisOptions = AxisOptions.Horizontal;
+                leftJoystick.AxisOptions = AxisOptions.Horizontal;
+                rightJoystick.AxisOptions = AxisOptions.Horizontal;
                 background.sprite = axisSprites[index];
                 break;
             case 2:
-                variableJoystick.AxisOptions = AxisOptions.Vertical;
+                leftJoystick.AxisOptions = AxisOptions.Vertical;
+                rightJoystick.AxisOptions = AxisOptions.Vertical;
                 background.sprite = axisSprites[index];
                 break;
             default:
@@ -51,16 +58,18 @@ public class JoystickSetterExample : MonoBehaviour
 
     public void SnapX(bool value)
     {
-        variableJoystick.SnapX = value;
+        leftJoystick.SnapX = value;
+        rightJoystick.SnapX = value;
     }
 
     public void SnapY(bool value)
     {
-        variableJoystick.SnapY = value;
+        leftJoystick.SnapY = value;
+        rightJoystick.SnapY = value;
     }
 
     private void Update()
     {
-        valueText.text = "Current Value: " + variableJoystick.Direction;
+        valueText.text = "Current Value: " + leftJoystick.Direction;
     }
 }

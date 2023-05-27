@@ -7,12 +7,31 @@ public class JoystickPlayerExample : MonoBehaviour
 {
     public float speed;
     public float maxSpeed;
-    public VariableJoystick variableJoystick;
+    public VariableJoystick leftJoystick;
+    public VariableJoystick rightJoystick;
     public Rigidbody rb;
     public Scrollbar scrollbar;
     public float scrollSpeed = 5f;
     public float minY = -5f;
     public float maxY = 5f;
+
+    private Vector3 originPosition;
+    private Quaternion originRotation;
+    private float originScrollbarValue;
+
+    private void Start()
+    {
+        originPosition = transform.position;
+        originRotation = transform.rotation;
+        originScrollbarValue = scrollbar.value;
+    }
+
+    public void ClickReset()
+    {
+        transform.position = originPosition;
+        transform.rotation = originRotation;
+        scrollbar.value = originScrollbarValue;
+    }
 
     private void Update()
     {
@@ -27,7 +46,7 @@ public class JoystickPlayerExample : MonoBehaviour
 
     public void FixedUpdate()
     {
-        Vector3 direction = Vector3.left * variableJoystick.Vertical + Vector3.forward * variableJoystick.Horizontal;
+        Vector3 direction = Vector3.left * leftJoystick.Vertical + Vector3.forward * leftJoystick.Horizontal;
         Vector3 targetVelocity = direction * speed;
 
         // 현재 속도가 제한 값을 초과하지 않는 경우에만 목표 속도로 설정
@@ -35,5 +54,11 @@ public class JoystickPlayerExample : MonoBehaviour
         {
             rb.velocity = targetVelocity;
         }
+
+        // 오브젝트를 회전시킴
+        float rotationSpeedLR = rightJoystick.Horizontal * scrollSpeed;
+        float rotationSpeedUD = rightJoystick.Vertical * scrollSpeed;
+        transform.Rotate(Vector3.up, rotationSpeedLR * Time.fixedDeltaTime);
+        transform.Rotate(Vector3.right, rotationSpeedUD * Time.fixedDeltaTime);
     }
 }
